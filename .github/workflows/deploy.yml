@@ -23,7 +23,7 @@ jobs:
         run: go test ./...
 
       - name: Build the Go application
-        run: go build -o bin/app
+        run: go build -o bin/app cmd/api/main.go
 
       - name: Deploy to EC2 Instance
         uses: easingthemes/ssh-deploy@main
