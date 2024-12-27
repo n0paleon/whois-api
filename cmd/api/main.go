@@ -2,17 +2,21 @@ package main
 
 import (
 	"context"
-	"fmt"
 	"github.com/sirupsen/logrus"
 	"go.uber.org/fx"
 	"log"
+	"net"
 	"os"
 	"os/signal"
 	"path/filepath"
+	"strconv"
 	"syscall"
 	"time"
 	"whois-api/internal/adapters/api"
+	"whois-api/internal/adapters/api/handler"
 	"whois-api/internal/config"
+	"whois-api/internal/core/ports"
+	"whois-api/internal/core/service"
 	"whois-api/internal/infrastructure/server"
 	"whois-api/internal/infrastructure/workers"
 	"whois-api/pkg/logger"
@@ -51,6 +55,14 @@ func main() {
 		fx.Provide(func() *config.Config { return cfg }),
 		fx.Provide(func() context.Context { return rootCtx }),
 		fx.Provide(func() *logrus.Logger { return logrs }),
+		// provide handler
+		fx.Provide(
+			handler.NewAPIV1Handler,
+			fx.Annotate(
+				service.NewWhoisService,
+				fx.As(new(ports.WhoisService)),
+			),
+		),
 		fx.Provide(server.NewHttpServer),
 		fx.Provide(api.NewRouter),
 		fx.Invoke(func(r *api.Router) {
@@ -60,7 +72,7 @@ func main() {
 			lc.Append(fx.Hook{
 				OnStart: func(ctx context.Context) error {
 					return workers.Pool.Submit(func() {
-						_ = s.Start(fmt.Sprintf("%s:%d", cfg.Service.Http.Host, cfg.Service.Http.Port), ctx)
+						_ = s.Start(net.JoinHostPort(cfg.Service.Http.Host, strconv.Itoa(cfg.Service.Http.Port)), ctx)
 					})
 				},
 				OnStop: func(ctx context.Context) error {
