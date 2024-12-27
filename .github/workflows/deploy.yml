@@ -8,6 +8,10 @@ on:
 jobs:
   deploy:
     runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        arch: [ amd64, arm64 ]
+
     steps:
       - uses: actions/checkout@v3
 
@@ -23,7 +27,9 @@ jobs:
         run: go test ./... -v
 
       - name: Build the Go application
-        run: go build -o bin/app cmd/api/main.go
+        run: |
+          mkdir -p bin/${{ matrix.arch }}
+          GOOS=linux GOARCH=${{ matrix.arch }} go build -o bin/${{ matrix.arch }}/app cmd/api/main.go
 
       - name: Deploy to EC2 Instance
         uses: easingthemes/ssh-deploy@main
