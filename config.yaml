@@ -1,0 +1,19 @@
+app:
+  name: "Whois API"
+  version: "1.0.0"
+  author: "Nopaleon Bonaparte"
+
+service:
+  http:
+    host: "localhost"
+    port: 3000
+    prefork: false
+
+logger:
+  level: "debug"
+  report_caller: false
+  format: "console"
+  pretty_print: false
+
+workerpool:
+  size: 1000
