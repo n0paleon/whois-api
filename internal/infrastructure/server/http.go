@@ -68,7 +68,7 @@ func (s *Http) setDefaultMiddlewares() {
 	}))
 
 	app.Use(func(c *fiber.Ctx) error {
-		c.Set("X-Powered-By", fmt.Sprintf("%s %s", s.config.App.Name, s.config.App.Version))
+		c.Set("X-Powered-By", fmt.Sprintf("%s v%s", s.config.App.Name, s.config.App.Version))
 		return c.Next()
 	})
 
