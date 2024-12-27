@@ -1,4 +1,4 @@
-name: Continous Integration Tests
+name: Go Build and Test Workflow
 
 on:
   pull_request:
@@ -21,3 +21,9 @@ jobs:
 
       - name: Run Go tests
         run: go test ./...
+
+      - name: Build the Go application
+        run: go build -o bin/app
+
+      - name: Test the Go application
+        run: ./bin/app
