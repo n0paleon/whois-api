@@ -34,17 +34,17 @@ func (h *APIV1) Whois(c *fiber.Ctx) error {
 	}
 
 	query, err := valid.ParseRootDomain(payload.Domain)
-	if err != nil || !valid.ValidateDomain(query) {
+	if err != nil {
 		return c.Status(fiber.StatusBadRequest).JSON(domain.APIResponse{
 			Error:   true,
-			Message: "invalid domain name",
+			Message: err.Error(),
 		})
 	}
 
-	ctx, cancel := context.WithTimeout(c.UserContext(), 10*time.Second)
+	ctx, cancel := context.WithTimeout(c.UserContext(), 30*time.Second)
 	defer cancel()
 
-	result, err := h.WhoisService.Whois(query, ctx)
+	result, err := h.WhoisService.CheckWhois(query, ctx)
 	if err != nil {
 		return c.JSON(domain.APIResponse{
 			Error:   true,

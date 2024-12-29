@@ -17,6 +17,10 @@ type Config struct {
 			Port    int
 			Prefork bool
 		}
+		Redis struct {
+			Addr string
+			DB   int
+		}
 	}
 	Logger struct {
 		Level        string
