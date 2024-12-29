@@ -43,7 +43,6 @@ jobs:
           REPOSITORY: whois-api
           IMAGE_TAG: ${{ github.sha }}
         run: |
-          print "$REPOSITORY:latest $REGISTRY/$REGISTRY_ALIAS/$REPOSITORY:latest"
           docker build -t $REPOSITORY .
           docker tag $REPOSITORY:latest $REGISTRY/$REGISTRY_ALIAS/$REPOSITORY:latest
           docker push $REGISTRY/$REGISTRY_ALIAS/$REPOSITORY:$IMAGE_TAG
