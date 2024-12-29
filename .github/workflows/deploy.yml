@@ -41,7 +41,7 @@ jobs:
           REGISTRY: ${{ steps.login-ecr-public.outputs.registry }}
           REGISTRY_ALIAS: j6j1g9p3
           REPOSITORY: whois-api
-          IMAGE_TAG: ${{ steps.tag_version.outputs.new_version }}
+          IMAGE_TAG: 1.0.0
         run: |
           docker build -t $REGISTRY/$REGISTRY_ALIAS/$REPOSITORY:$IMAGE_TAG .
           docker push $REGISTRY/$REGISTRY_ALIAS/$REPOSITORY:$IMAGE_TAG
