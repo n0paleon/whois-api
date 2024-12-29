@@ -48,7 +48,7 @@ jobs:
         run: |
           docker buildx create --use
           docker buildx build \
-            --platform linux/amd64,linux/arm64,windows/amd64,windows/arm64 \
+            --platform linux/amd64,linux/arm64 \
             -t $REGISTRY/$REGISTRY_ALIAS/$REPOSITORY:$IMAGE_TAG \
             -t $REGISTRY/$REGISTRY_ALIAS/$REPOSITORY:latest \
             --push .
