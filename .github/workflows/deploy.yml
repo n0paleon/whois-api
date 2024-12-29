@@ -43,6 +43,7 @@ jobs:
           REPOSITORY: whois-api
           IMAGE_TAG: ${{ steps.tag_version.outputs.new_version }}
         run: |
+          print "$REPOSITORY:latest $REGISTRY/$REGISTRY_ALIAS/$REPOSITORY:latest"
           docker build -t $REPOSITORY .
           docker tag $REPOSITORY:latest $REGISTRY/$REGISTRY_ALIAS/$REPOSITORY:latest
           docker push $REGISTRY/$REGISTRY_ALIAS/$REPOSITORY:$IMAGE_TAG
