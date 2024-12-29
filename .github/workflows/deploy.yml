@@ -21,7 +21,7 @@ jobs:
         run: go mod tidy
 
       - name: Run Go tests
-        run: go test ./... -v
+        run: go test ./... -v --parallel=8
 
       - name: Configure AWS credentials
         uses: aws-actions/configure-aws-credentials@v4
@@ -41,7 +41,7 @@ jobs:
           REGISTRY: ${{ steps.login-ecr-public.outputs.registry }}
           REGISTRY_ALIAS: j6j1g9p3
           REPOSITORY: whois-api
-          IMAGE_TAG: ${{ github.sha }}
+          IMAGE_TAG: ${{ steps.tag_version.outputs.new_version }}
         run: |
           docker build -t $REGISTRY/$REGISTRY_ALIAS/$REPOSITORY:$IMAGE_TAG .
           docker push $REGISTRY/$REGISTRY_ALIAS/$REPOSITORY:$IMAGE_TAG
