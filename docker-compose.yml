@@ -17,7 +17,7 @@ services:
 
   app:
     container_name: 'whois-core'
-    image: 'nopaleon/whois-api:latest'
+    image: 'whois-api:latest'
     build:
       context: .
       dockerfile: Dockerfile
