@@ -150,11 +150,12 @@ func (a *Whois) secondaryWhoisWithAPI(query string, ctx context.Context) ([]byte
 }
 
 func (a *Whois) secondaryWhoisWithCLI(query string, ctx context.Context) ([]byte, error) {
-	cmd := exec.CommandContext(context.Background(), "whois", query)
+	cmd := exec.CommandContext(ctx, "whois", query)
 	output, err := cmd.Output()
 	if err != nil {
 		return nil, fmt.Errorf("failed to execute whois-cli: %+v", err)
 	}
+
 	return output, nil
 }
 
