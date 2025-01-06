@@ -10,9 +10,9 @@ services:
       - redis_data:/data
     healthcheck:
       test: ["CMD-SHELL", "redis-cli ping | grep PONG"]
-      interval: 10s
+      interval: 3s
       retries: 5
-      start_period: 3s
+      start_period: 1s
       timeout: 3s
 
   app:
