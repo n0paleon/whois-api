@@ -127,7 +127,7 @@ func (w *Whois) MassLookup(queries []string, ctx context.Context, rateLimit time
 				continue
 			}
 
-			if age > 1*time.Minute {
+			if age > 3*24*time.Hour {
 				logger.L().Warnf("Cache age for domain %s is too old, requesting new data", q)
 
 				<-rateLimiter
