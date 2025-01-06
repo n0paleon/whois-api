@@ -14,9 +14,12 @@ import (
 	"time"
 	"whois-api/internal/adapters/api"
 	"whois-api/internal/adapters/api/handler"
+	"whois-api/internal/adapters/repository"
+	"whois-api/internal/adapters/whoisadapter"
 	"whois-api/internal/config"
 	"whois-api/internal/core/ports"
 	"whois-api/internal/core/service"
+	"whois-api/internal/infrastructure/database"
 	"whois-api/internal/infrastructure/server"
 	"whois-api/internal/infrastructure/workers"
 	"whois-api/pkg/logger"
@@ -55,12 +58,18 @@ func main() {
 		fx.Provide(func() *config.Config { return cfg }),
 		fx.Provide(func() context.Context { return rootCtx }),
 		fx.Provide(func() *logrus.Logger { return logrs }),
+		fx.Provide(database.NewRedisConn),
+		fx.Provide(repository.NewWhoisRepository),
 		// provide handler
 		fx.Provide(
 			handler.NewAPIV1Handler,
 			fx.Annotate(
 				service.NewWhoisService,
 				fx.As(new(ports.WhoisService)),
+			),
+			fx.Annotate(
+				whoisadapter.NewWhoisAdapter,
+				fx.As(new(ports.WhoisAdapter)),
 			),
 		),
 		fx.Provide(server.NewHttpServer),

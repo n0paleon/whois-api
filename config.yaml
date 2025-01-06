@@ -5,9 +5,12 @@ app:
 
 service:
   http:
-    host: "localhost"
+    host: ""
     port: 3000
     prefork: false
+  redis:
+    addr: "localhost:6379"
+    DB: 0
 
 logger:
   level: "debug"

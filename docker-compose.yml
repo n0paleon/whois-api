@@ -1,0 +1,35 @@
+name: 'whois-api'
+
+services:
+  redis:
+    container_name: 'whois-redis'
+    image: 'redis:alpine'
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis_data:/data
+    healthcheck:
+      test: ["CMD-SHELL", "redis-cli ping | grep PONG"]
+      interval: 10s
+      retries: 5
+      start_period: 3s
+      timeout: 3s
+
+  app:
+    container_name: 'whois-core'
+    image: 'whois-api:latest'
+    build:
+      context: .
+      dockerfile: Dockerfile
+    environment:
+      SERVICE.REDIS.ADDR: redis:6379
+    ports:
+      - "3000:3000"
+    depends_on:
+      redis:
+        condition: service_healthy
+    restart: on-failure
+
+volumes:
+  redis_data:
+    driver: local
