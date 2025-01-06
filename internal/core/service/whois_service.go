@@ -80,6 +80,7 @@ func (w *Whois) MassLookup(queries []string, ctx context.Context, rateLimit time
 				cacheHit = append(cacheHit, query)
 			} else {
 				cacheMisses = append(cacheMisses, query)
+				results[query] = nil
 			}
 			mutex.Unlock()
 		})
@@ -100,6 +101,9 @@ func (w *Whois) MassLookup(queries []string, ctx context.Context, rateLimit time
 			result, err := w.adapter.GetWhoisData(query, ctx)
 			if err != nil {
 				logger.L().Warnf("Failed to fetch data for domain %s: %v", query, err)
+				mutex.Lock()
+				results[query] = nil
+				mutex.Unlock()
 				return
 			}
 

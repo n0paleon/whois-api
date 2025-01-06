@@ -113,11 +113,11 @@ func (h *APIV1) MassWhoisCheck(c *fiber.Ctx) error {
 			continue
 		}
 
-		if whoisData, found := results[res.DomainName]; found {
-			res.WhoisData = whoisData
+		if whoisData, found := results[res.DomainName]; found && whoisData != nil {
+			res.WhoisData = *whoisData
 		} else {
 			res.Error = true
-			res.Message = "Whois data not found"
+			res.Message = "data not found"
 		}
 	}
 

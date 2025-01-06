@@ -11,7 +11,6 @@ import (
 	"mime/multipart"
 	"net/http"
 	"os/exec"
-	"runtime"
 	"sync"
 	"time"
 	"whois-api/internal/core/domain"
@@ -112,10 +111,11 @@ func (a *Whois) primaryWhoisCheck(query string, ctx context.Context) ([]byte, er
 	}
 }
 
+// TODO: add implementation of whois cli
 func (a *Whois) secondaryWhoisCheck(query string, ctx context.Context) ([]byte, error) {
-	if runtime.GOOS == "linux" && isWhoisCLIAvailable() {
-		return a.secondaryWhoisWithCLI(query, ctx)
-	}
+	//if runtime.GOOS == "linux" && isWhoisCLIAvailable() {
+	//	return a.secondaryWhoisWithCLI(query, ctx)
+	//}
 	return a.secondaryWhoisWithAPI(query, ctx)
 }
 
