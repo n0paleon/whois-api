@@ -16,6 +16,7 @@ import (
 	"time"
 	"whois-api/internal/core/domain"
 	"whois-api/internal/core/ports"
+	"whois-api/pkg/logger"
 )
 
 type Whois struct {
@@ -153,6 +154,7 @@ func (a *Whois) secondaryWhoisWithCLI(query string, ctx context.Context) ([]byte
 	cmd := exec.CommandContext(ctx, "whois", query)
 	output, err := cmd.Output()
 	if err != nil {
+		logger.L().Error(err)
 		return nil, errors.New("failed to execute whois-cli")
 	}
 	return output, nil
