@@ -2,7 +2,6 @@ package service
 
 import (
 	"context"
-	"fmt"
 	"sync"
 	"time"
 	"whois-api/internal/core/domain"
@@ -100,8 +99,6 @@ func (w *Whois) MassLookup(queries []string, ctx context.Context, rateLimit time
 				logger.L().Warnf("Failed to fetch data for domain %s: %v", query, err)
 				return
 			}
-
-			fmt.Println(result.Domain.NameServers)
 
 			err = w.repository.SaveWhoisData(query, result, ctx)
 			if err == nil {
