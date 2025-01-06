@@ -16,10 +16,10 @@ type APIV1 struct {
 	WhoisService ports.WhoisService
 }
 
-func NewAPIV1Handler(config *config.Config, WhoisService ports.WhoisService) *APIV1 {
+func NewAPIV1Handler(config *config.Config, whoisService ports.WhoisService) *APIV1 {
 	return &APIV1{
 		config:       config,
-		WhoisService: WhoisService,
+		WhoisService: whoisService,
 	}
 }
 

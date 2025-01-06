@@ -37,6 +37,7 @@ func (w *Whois) CheckWhois(query string, ctx context.Context) (*domain.Whois, er
 		_ = workers.Pool.Submit(func() {
 			freshData, err := w.adapter.GetWhoisData(query, ctx)
 			if err != nil {
+				logger.L().Warnf("Failed to update cache data for domain %s with error: %v", query, err)
 				return
 			}
 			if err := w.repository.SaveWhoisData(query, freshData, context.Background()); err == nil {

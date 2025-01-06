@@ -6,7 +6,7 @@ import (
 	whois2 "github.com/domainr/whois"
 	"github.com/likexian/whois"
 	whoisparser "github.com/likexian/whois-parser"
-	"io/ioutil"
+	"io"
 	"mime/multipart"
 	"net/http"
 	"sync"
@@ -64,7 +64,7 @@ func (a *Whois) primaryWhoisCheck(query string, ctx context.Context) ([]byte, er
 		}
 
 		client := whois.NewClient()
-		//client.SetTimeout(3 * time.Second)
+		// client.SetTimeout(3 * time.Second)
 		result, err := client.Whois(query, whoisServer)
 		if err != nil {
 			errChan <- err
@@ -120,7 +120,7 @@ func (a *Whois) secondaryWhoisCheck(query string, ctx context.Context) ([]byte, 
 	}
 	defer resp.Body.Close()
 
-	body, err := ioutil.ReadAll(resp.Body)
+	body, err := io.ReadAll(resp.Body)
 	if err != nil {
 		return nil, err
 	}
