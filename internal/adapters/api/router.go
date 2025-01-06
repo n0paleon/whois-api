@@ -27,5 +27,6 @@ func (r *Router) SetupRoutes() {
 	route.Get("/", func(c *fiber.Ctx) error {
 		return c.SendString("OK")
 	})
-	route.Post("/whois", r.apiHandler.Whois)
+	route.Post("/whois/lookup", r.apiHandler.SingleWhoisCheck)
+	route.Post("/whois/mass-lookup", r.apiHandler.MassWhoisCheck)
 }
