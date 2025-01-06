@@ -37,6 +37,9 @@ func (w *Whois) SingleLookup(query string, ctx context.Context) (*domain.Whois, 
 		})
 	} else {
 		_ = workers.Pool.Submit(func() {
+			ctx, cancel := context.WithTimeout(context.Background(), 30*time.Second)
+			defer cancel()
+
 			freshData, err := w.adapter.GetWhoisData(query, ctx)
 			if err != nil {
 				logger.L().Warnf("Failed to update cache data for domain %s with error: %v", query, err)
