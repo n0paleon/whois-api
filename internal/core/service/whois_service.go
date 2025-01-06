@@ -2,7 +2,6 @@ package service
 
 import (
 	"context"
-	"fmt"
 	"sync"
 	"time"
 	"whois-api/internal/core/domain"
@@ -38,6 +37,9 @@ func (w *Whois) SingleLookup(query string, ctx context.Context) (*domain.Whois, 
 		})
 	} else {
 		_ = workers.Pool.Submit(func() {
+			ctx, cancel := context.WithTimeout(context.Background(), 30*time.Second)
+			defer cancel()
+
 			freshData, err := w.adapter.GetWhoisData(query, ctx)
 			if err != nil {
 				logger.L().Warnf("Failed to update cache data for domain %s with error: %v", query, err)
@@ -101,8 +103,6 @@ func (w *Whois) MassLookup(queries []string, ctx context.Context, rateLimit time
 				return
 			}
 
-			fmt.Println(result.Domain.NameServers)
-
 			err = w.repository.SaveWhoisData(query, result, ctx)
 			if err == nil {
 				logger.L().Infof("Cache data saved for domain: %s", query)
@@ -130,7 +130,7 @@ func (w *Whois) MassLookup(queries []string, ctx context.Context, rateLimit time
 				continue
 			}
 
-			if age > 1*time.Minute {
+			if age > 3*24*time.Hour {
 				logger.L().Warnf("Cache age for domain %s is too old, requesting new data", q)
 
 				<-rateLimiter

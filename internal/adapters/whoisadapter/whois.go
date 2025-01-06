@@ -3,7 +3,7 @@ package whoisadapter
 import (
 	"bytes"
 	"context"
-	"errors"
+	"fmt"
 	whois2 "github.com/domainr/whois"
 	"github.com/likexian/whois"
 	whoisparser "github.com/likexian/whois-parser"
@@ -153,8 +153,9 @@ func (a *Whois) secondaryWhoisWithCLI(query string, ctx context.Context) ([]byte
 	cmd := exec.CommandContext(ctx, "whois", query)
 	output, err := cmd.Output()
 	if err != nil {
-		return nil, errors.New("failed to execute whois-cli")
+		return nil, fmt.Errorf("failed to execute whois-cli: %+v", err)
 	}
+
 	return output, nil
 }
 
