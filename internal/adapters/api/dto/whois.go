@@ -11,8 +11,8 @@ type MassDomainQuery struct {
 }
 
 type MassDomainQueryResponse struct {
-	Error      bool          `json:"error"`
-	Message    string        `json:"message"`
-	DomainName string        `json:"domain_name"`
-	WhoisData  *domain.Whois `json:"whois"`
+	Error      bool         `json:"error"`
+	Message    string       `json:"message"`
+	DomainName string       `json:"domain_name"`
+	WhoisData  domain.Whois `json:"whois"`
 }
