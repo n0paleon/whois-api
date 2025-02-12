@@ -10,6 +10,7 @@ type Config struct {
 		Name    string
 		Version string
 		Author  string
+		Debug   bool
 	}
 	Service struct {
 		Http struct {
@@ -18,9 +19,14 @@ type Config struct {
 			Prefork bool
 		}
 		Redis struct {
-			Addr string
-			DB   int
+			Addr         string
+			DB           int
+			CacheEnabled bool `mapstructure:"cache_enabled"`
 		}
+	}
+	RapidApi struct {
+		EnableProtection bool   `mapstructure:"enable_protection"`
+		SecretKey        string `mapstructure:"secret_key"`
 	}
 	Logger struct {
 		Level        string

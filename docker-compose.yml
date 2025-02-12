@@ -23,6 +23,7 @@ services:
       dockerfile: Dockerfile
     environment:
       SERVICE.REDIS.ADDR: redis:6379
+      APP.DEBUG: false
     ports:
       - "3000:3000"
     depends_on:

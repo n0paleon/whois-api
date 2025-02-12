@@ -72,6 +72,21 @@ func (s *Http) setDefaultMiddlewares() {
 		return c.Next()
 	})
 
+	if s.config.RapidApi.EnableProtection {
+		app.Use(func(c *fiber.Ctx) error {
+			clientKey := c.Get("X-RapidAPI-Proxy-Secret")
+			secretKey := s.config.RapidApi.SecretKey
+
+			if clientKey == secretKey {
+				return c.Next()
+			}
+
+			return c.Status(fiber.StatusForbidden).JSON(fiber.Map{
+				"status_code": "ACCESS_DENIED",
+			})
+		})
+	}
+
 	app.Use(healthcheck.New(healthcheck.ConfigDefault))
 
 	app.Use(func(c *fiber.Ctx) error {

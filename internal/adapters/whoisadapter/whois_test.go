@@ -2,8 +2,10 @@ package whoisadapter
 
 import (
 	"context"
+	"github.com/likexian/whois"
 	"github.com/stretchr/testify/assert"
 	"testing"
+	"time"
 	"whois-api/pkg/valid"
 )
 
@@ -63,4 +65,26 @@ func BenchmarkGetWhois(b *testing.B) {
 			}
 		}
 	})
+}
+
+func TestLikexianWhois(t *testing.T) {
+	domainName := "turulabs.com"
+	timeout := 2000 * time.Millisecond
+
+	client := whois.NewClient()
+	client.SetTimeout(timeout)
+	client.SetDisableReferral(false)
+
+	server, _, _ := GetWhoisServer(domainName)
+	result, err := client.Whois(domainName, server)
+	assert.Nil(t, err)
+	assert.NotNil(t, result)
+}
+
+func TestGetAvailableTLDs(t *testing.T) {
+	list := GetAvailableTLDs()
+	assert.NotNil(t, list)
+
+	t.Log(list)
+	t.Logf("total %d TLDs", len(list))
 }

@@ -51,6 +51,13 @@ func main() {
 	sigChan := make(chan os.Signal, 1)
 	signal.Notify(sigChan, syscall.SIGINT, syscall.SIGTERM)
 
+	// check if http debug monitoring is enabled
+	if cfg.App.Debug {
+		_ = workers.Pool.Submit(func() {
+			server.NewHttpDebugging()
+		})
+	}
+
 	rootCtx, rootCtxCancel := context.WithCancel(context.Background())
 	defer rootCtxCancel()
 

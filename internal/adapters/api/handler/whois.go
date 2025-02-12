@@ -5,10 +5,10 @@ import (
 	"github.com/gofiber/fiber/v2"
 	"time"
 	"whois-api/internal/adapters/api/dto"
+	"whois-api/internal/adapters/whoisadapter"
 	"whois-api/internal/config"
 	"whois-api/internal/core/domain"
 	"whois-api/internal/core/ports"
-	"whois-api/pkg/utils"
 	"whois-api/pkg/valid"
 )
 
@@ -22,6 +22,42 @@ func NewAPIV1Handler(config *config.Config, whoisService ports.WhoisService) *AP
 		config:       config,
 		WhoisService: whoisService,
 	}
+}
+
+func (h *APIV1) GetTLDList(c *fiber.Ctx) error {
+	TLDs := whoisadapter.GetAvailableTLDs()
+
+	return c.JSON(domain.APIResponse{
+		Error: false,
+		Data:  TLDs,
+	})
+}
+
+func (h *APIV1) RawWhoisCheck(c *fiber.Ctx) error {
+	var payload *dto.SingleDomainQuery
+
+	if err := c.BodyParser(&payload); err != nil {
+		return c.Status(fiber.StatusBadRequest).JSON(domain.APIResponse{
+			Error:   true,
+			Message: "domain is required",
+		})
+	}
+
+	ctx, cancel := context.WithTimeout(c.UserContext(), 30*time.Second)
+	defer cancel()
+
+	result, err := h.WhoisService.RawWhoisLookup(payload.Domain, ctx)
+	if err != nil {
+		return c.Status(fiber.StatusNotFound).JSON(domain.APIResponse{
+			Error:   true,
+			Message: domain.ErrUnsupportedTLD.Error(),
+		})
+	}
+
+	return c.JSON(domain.APIResponse{
+		Error: false,
+		Data:  result,
+	})
 }
 
 func (h *APIV1) SingleWhoisCheck(c *fiber.Ctx) error {
@@ -100,7 +136,7 @@ func (h *APIV1) MassWhoisCheck(c *fiber.Ctx) error {
 		}
 	}
 
-	results, err := h.WhoisService.MassLookup(domainNames, ctx, time.Duration(utils.RandomInRange(100, 250))*time.Millisecond)
+	results, err := h.WhoisService.MassLookup(domainNames, ctx)
 	if err != nil {
 		return c.Status(fiber.StatusInternalServerError).JSON(domain.APIResponse{
 			Error:   true,

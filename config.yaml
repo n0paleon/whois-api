@@ -2,6 +2,7 @@ app:
   name: "Whois API"
   version: "1.0.0"
   author: "Nopaleon Bonaparte"
+  debug: true
 
 service:
   http:
@@ -11,6 +12,11 @@ service:
   redis:
     addr: "localhost:6379"
     DB: 0
+    cache_enabled: true
+
+rapidapi:
+  enable_protection: false
+  secret_key: 92a352a0-c638-11ef-a704-09571823e6ff
 
 logger:
   level: "debug"
@@ -19,4 +25,4 @@ logger:
   pretty_print: false
 
 workerpool:
-  size: 1000
+  size: 1500

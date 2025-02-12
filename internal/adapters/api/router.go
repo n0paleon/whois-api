@@ -28,5 +28,8 @@ func (r *Router) SetupRoutes() {
 		return c.SendString("OK")
 	})
 	route.Post("/whois/lookup", r.apiHandler.SingleWhoisCheck)
+	route.Post("/whois/lookup/raw", r.apiHandler.RawWhoisCheck)
 	route.Post("/whois/mass-lookup", r.apiHandler.MassWhoisCheck)
+
+	route.Get("/available-tlds", r.apiHandler.GetTLDList)
 }

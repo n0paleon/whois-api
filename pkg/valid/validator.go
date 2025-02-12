@@ -5,6 +5,7 @@ import (
 	"github.com/weppos/publicsuffix-go/publicsuffix"
 	"net/url"
 	"strings"
+	"unicode"
 	"whois-api/internal/core/domain"
 )
 
@@ -34,4 +35,20 @@ func ParseRootDomain(q string) (string, error) {
 	}
 
 	return rootDomain, nil
+}
+
+func IsValidDomain(name string) bool {
+	if len(name) == 0 || len(name) > 63 {
+		return false
+	}
+
+	for i, c := range name {
+		if !(unicode.IsLetter(c) || unicode.IsDigit(c) || c == '-') {
+			return false // Jika ada karakter ilegal
+		}
+		if (i == 0 || i == len(name)-1) && c == '-' {
+			return false // Tidak boleh diawali atau diakhiri dengan "-"
+		}
+	}
+	return true
 }

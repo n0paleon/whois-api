@@ -1,23 +1,18 @@
 package whoisadapter
 
 import (
-	"bytes"
 	"context"
-	"fmt"
-	whois2 "github.com/domainr/whois"
+	"github.com/go-resty/resty/v2"
 	"github.com/likexian/whois"
 	whoisparser "github.com/likexian/whois-parser"
-	"io"
-	"mime/multipart"
-	"net/http"
-	"os/exec"
-	"sync"
 	"time"
 	"whois-api/internal/core/domain"
 	"whois-api/internal/core/ports"
+	"whois-api/pkg/logger"
 )
 
 type Whois struct {
+	client *resty.Client
 }
 
 var (
@@ -26,11 +21,13 @@ var (
 )
 
 func NewWhoisAdapter() ports.WhoisAdapter {
-	return &Whois{}
+	return &Whois{
+		client: resty.New(),
+	}
 }
 
 func (a *Whois) GetWhoisData(query string, ctx context.Context) (*domain.Whois, error) {
-	pCtx, pCancel := context.WithTimeout(ctx, 3*time.Second)
+	pCtx, pCancel := context.WithTimeout(ctx, 2000*time.Millisecond)
 	defer pCancel()
 
 	var parsedResult *domain.Whois
@@ -63,111 +60,79 @@ func (a *Whois) GetWhoisData(query string, ctx context.Context) (*domain.Whois, 
 	return parsedResult, nil
 }
 
-func (a *Whois) primaryWhoisCheck(query string, ctx context.Context) ([]byte, error) {
-	var (
-		wg       sync.WaitGroup
-		rawWhois []byte
-		errChan  = make(chan error, 1)
-	)
-	wg.Add(1)
-	go func() {
-		defer wg.Done()
-
-		whoisServer, _, err := whois2.Server(query)
-		if err != nil {
-			errChan <- err
-			return
-		}
-
-		client := whois.NewClient()
-		result, err := client.Whois(query, whoisServer)
-		if err != nil {
-			errChan <- err
-			return
-		}
-
-		if len(result) > 0 {
-			rawWhois = []byte(result)
-			return
-		}
-	}()
-
-	done := make(chan struct{})
-	go func() {
-		wg.Wait()
-		close(done)
-	}()
-
-	select {
-	case <-done:
-		select {
-		case err := <-errChan:
-			return nil, err
-		default:
-			return rawWhois, nil
-		}
-	case <-ctx.Done():
-		return nil, ctx.Err()
+func (a *Whois) GetRawWhoisData(query string, ctx context.Context) (string, error) {
+	client := whois.NewClient()
+	deadline, ok := ctx.Deadline()
+	if !ok {
+		deadline = time.Now().Add(defaultTimeout)
 	}
+
+	timeout := time.Until(deadline)
+	client.SetTimeout(timeout)
+	client.SetDisableStats(true)
+
+	result, err := client.Whois(query)
+	if err != nil || len(result) == 0 {
+		logger.L().Warn("failed to get raw whois data", err)
+		return "", err
+	}
+
+	return result, nil
+}
+
+func (a *Whois) primaryWhoisCheck(query string, ctx context.Context) ([]byte, error) {
+	client := whois.NewClient()
+	deadline, ok := ctx.Deadline()
+	if !ok {
+		deadline = time.Now().Add(defaultTimeout)
+	}
+	timeout := time.Until(deadline)
+	client.SetTimeout(timeout)
+
+	server, _, _ := GetWhoisServer(query)
+	result, err := client.Whois(query, server)
+	if err != nil {
+		return nil, domain.ErrWhoisServerTimeout
+	}
+
+	return []byte(result), nil
 }
 
 // TODO: add implementation of whois cli
 func (a *Whois) secondaryWhoisCheck(query string, ctx context.Context) ([]byte, error) {
-	//if runtime.GOOS == "linux" && isWhoisCLIAvailable() {
+	// if runtime.GOOS == "linux" && isWhoisCLIAvailable() {
 	//	return a.secondaryWhoisWithCLI(query, ctx)
-	//}
+	// }
+
 	return a.secondaryWhoisWithAPI(query, ctx)
 }
 
 func (a *Whois) secondaryWhoisWithAPI(query string, ctx context.Context) ([]byte, error) {
-	payload := &bytes.Buffer{}
-	writer := multipart.NewWriter(payload)
+	ctx, cancel := context.WithTimeout(ctx, 5*time.Second)
+	defer cancel()
+	resp, err := a.client.R().
+		SetContext(ctx).
+		SetHeader("Content-Type", "multipart/form-data").
+		SetMultipartFormData(map[string]string{
+			"host": query,
+		}).
+		Post(alternativeAPI)
 
-	_ = writer.WriteField("host", query)
-	if err := writer.Close(); err != nil {
-		return nil, err
-	}
-
-	client := &http.Client{Timeout: defaultTimeout}
-	req, err := http.NewRequest("POST", alternativeAPI, payload)
 	if err != nil {
-		return nil, err
-	}
-	req.Header.Set("Content-Type", writer.FormDataContentType())
-
-	resp, err := client.Do(req)
-	if err != nil {
-		return nil, err
-	}
-	defer resp.Body.Close()
-
-	body, err := io.ReadAll(resp.Body)
-	if err != nil {
-		return nil, err
+		return nil, domain.ErrInternalServerError
 	}
 
-	return body, nil
-}
-
-func (a *Whois) secondaryWhoisWithCLI(query string, ctx context.Context) ([]byte, error) {
-	cmd := exec.CommandContext(ctx, "whois", query)
-	output, err := cmd.Output()
-	if err != nil {
-		return nil, fmt.Errorf("failed to execute whois-cli: %+v", err)
+	if resp.StatusCode() != 200 {
+		return nil, domain.ErrDataNotFound
 	}
 
-	return output, nil
-}
-
-func isWhoisCLIAvailable() bool {
-	_, err := exec.LookPath("whois")
-	return err == nil
+	return resp.Body(), nil
 }
 
 func (a *Whois) parseRawWhois(data []byte) (*domain.Whois, error) {
 	parsedResult, err := whoisparser.Parse(string(data))
 	if err != nil {
-		return nil, err
+		return nil, domain.ErrWhoisParsingError
 	}
 
 	whoisDomain := new(domain.Whois)

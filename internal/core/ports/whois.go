@@ -8,11 +8,13 @@ import (
 
 type WhoisService interface {
 	SingleLookup(query string, ctx context.Context) (*domain.Whois, error)
-	MassLookup(query []string, ctx context.Context, rateLimit time.Duration) (map[string]*domain.Whois, error)
+	MassLookup(query []string, ctx context.Context) (map[string]*domain.Whois, error)
+	RawWhoisLookup(query string, ctx context.Context) (string, error)
 }
 
 type WhoisAdapter interface {
 	GetWhoisData(query string, ctx context.Context) (*domain.Whois, error)
+	GetRawWhoisData(query string, ctx context.Context) (string, error)
 }
 
 type WhoisRepository interface {

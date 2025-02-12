@@ -2,6 +2,11 @@ package domain
 
 import "time"
 
+type NameAvailability struct {
+	Domain    string `json:"domain_name"`
+	Available bool   `json:"is_available"`
+}
+
 type Whois struct {
 	Domain     *WhoisDomain  `json:"domain"`
 	Registrar  *WhoisContact `json:"registrar"`
