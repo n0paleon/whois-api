@@ -1,0 +1,41 @@
+name: 'whois-api'
+
+services:
+  redis:
+    container_name: 'whois-redis'
+    image: 'redis:alpine'
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis_data:/data
+    healthcheck:
+      test: ["CMD-SHELL", "redis-cli ping | grep PONG"]
+      interval: 3s
+      retries: 5
+      start_period: 1s
+      timeout: 3s
+
+  app:
+    container_name: 'whois-core'
+    image: 'public.ecr.aws/j6j1g9p3/whois-api:latest'
+    build:
+      context: .
+      dockerfile: Dockerfile
+    environment:
+      SERVICE.REDIS.ADDR: redis:6379
+      SERVICE.HTTP.HOST: ""
+      SERVICE.HTTP.PORT: 3000
+      SERVICE.HTTP.PREFORK: true
+      APP.DEBUG: false
+      RAPIDAPI.ENABLE_PROTECTION: true
+      RAPIDAPI.SECRET_KEY: 92a352a0-c638-11ef-a704-09571823e6ff
+    ports:
+      - "3000:3000"
+    depends_on:
+      redis:
+        condition: service_healthy
+    restart: on-failure
+
+volumes:
+  redis_data:
+    driver: local
