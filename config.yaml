@@ -1,13 +1,13 @@
 app:
   name: "Whois API"
-  version: "1.0.0"
+  version: "1.0.2"
   author: "Nopaleon Bonaparte"
   debug: true
 
 service:
   http:
     host: ""
-    port: 3000
+    port: 8001
     prefork: false
   redis:
     addr: "localhost:6379"

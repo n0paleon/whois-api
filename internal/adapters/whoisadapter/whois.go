@@ -71,7 +71,8 @@ func (a *Whois) GetRawWhoisData(query string, ctx context.Context) (string, erro
 	client.SetTimeout(timeout)
 	client.SetDisableStats(true)
 
-	result, err := client.Whois(query)
+	server, _, _ := GetWhoisServer(query)
+	result, err := client.Whois(query, server)
 	if err != nil || len(result) == 0 {
 		logger.L().Warn("failed to get raw whois data", err)
 		return "", err
