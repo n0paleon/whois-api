@@ -4,6 +4,7 @@ import (
 	"context"
 	"github.com/miekg/dns"
 	"sync"
+	"whois-api/internal/infrastructure/workers"
 )
 
 type DNS struct {
@@ -49,7 +50,7 @@ func (a *DNS) QueryAll(ctx context.Context, domain string) (DNSRecords, error) {
 	for _, qtype := range recordTypes {
 		wg.Add(1)
 
-		go func(qtype uint16) {
+		_ = workers.Pool.Submit(func() {
 			defer wg.Done()
 
 			ans, err := a.Query(ctx, domain, qtype)
@@ -63,7 +64,7 @@ func (a *DNS) QueryAll(ctx context.Context, domain string) (DNSRecords, error) {
 				results = append(results, parseRR(rr))
 			}
 			mu.Unlock()
-		}(qtype)
+		})
 	}
 
 	wg.Wait()

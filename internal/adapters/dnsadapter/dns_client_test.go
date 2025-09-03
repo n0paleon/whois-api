@@ -5,7 +5,12 @@ import (
 	"github.com/miekg/dns"
 	"testing"
 	"time"
+	"whois-api/internal/infrastructure/workers"
 )
+
+func init() {
+	_ = workers.InitWorkerPool(1500)
+}
 
 func TestDNS_Query_ARecord(t *testing.T) {
 	dnsClient := NewDNS("8.8.8.8:53")

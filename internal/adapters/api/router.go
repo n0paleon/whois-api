@@ -22,7 +22,7 @@ func NewRouter(server *server.Http, cfg *config.Config, apiHandler *handler.APIV
 }
 
 func (r *Router) SetupRoutes() {
-	route := r.app.Group("/")
+	route := r.app.Group("/v1")
 
 	route.Get("/", func(c *fiber.Ctx) error {
 		return c.SendString("OK")
