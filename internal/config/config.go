@@ -23,6 +23,7 @@ type Config struct {
 			DB           int
 			CacheEnabled bool `mapstructure:"cache_enabled"`
 		}
+		DNSResolver string `mapstructure:"dns_resolver"`
 	}
 	RapidApi struct {
 		EnableProtection bool   `mapstructure:"enable_protection"`

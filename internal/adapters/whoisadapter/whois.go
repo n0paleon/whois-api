@@ -27,7 +27,7 @@ func NewWhoisAdapter() ports.WhoisAdapter {
 }
 
 func (a *Whois) GetWhoisData(query string, ctx context.Context) (*domain.Whois, error) {
-	pCtx, pCancel := context.WithTimeout(ctx, 2000*time.Millisecond)
+	pCtx, pCancel := context.WithTimeout(ctx, 5000*time.Millisecond)
 	defer pCancel()
 
 	var parsedResult *domain.Whois
@@ -35,29 +35,52 @@ func (a *Whois) GetWhoisData(query string, ctx context.Context) (*domain.Whois, 
 	if err != nil {
 		result, err = a.secondaryWhoisCheck(query, ctx)
 		if err != nil {
-			return nil, err
-		}
-
-		parsedResult, err = a.parseRawWhois(result)
-		if err != nil {
-			return nil, err
-		}
-	} else {
-		parsedResult, err = a.parseRawWhois(result)
-		if err != nil {
-			result, err = a.secondaryWhoisCheck(query, ctx)
-			if err != nil {
-				return nil, err
-			}
-
-			parsedResult, err = a.parseRawWhois(result)
+			result, err = a.finalWhoisCheck(query, ctx)
 			if err != nil {
 				return nil, err
 			}
 		}
 	}
 
+	parsedResult, err = a.parseRawWhois(result)
+	if err != nil {
+		// kalau parsing gagal, coba secondary
+		result, err = a.secondaryWhoisCheck(query, ctx)
+		if err != nil {
+			// fallback terakhir -> dengan referral enabled
+			result, err = a.finalWhoisCheck(query, ctx)
+			if err != nil {
+				return nil, err
+			}
+		}
+
+		parsedResult, err = a.parseRawWhois(result)
+		if err != nil {
+			return nil, err
+		}
+	}
+
 	return parsedResult, nil
+}
+
+func (a *Whois) finalWhoisCheck(query string, ctx context.Context) ([]byte, error) {
+	client := whois.NewClient()
+	client.SetDisableReferral(false)
+
+	deadline, ok := ctx.Deadline()
+	if !ok {
+		deadline = time.Now().Add(defaultTimeout)
+	}
+	timeout := time.Until(deadline)
+	client.SetTimeout(timeout)
+
+	server, _, _ := GetWhoisServer(query)
+	result, err := client.Whois(query, server)
+	if err != nil || len(result) == 0 {
+		return nil, domain.ErrWhoisServerTimeout
+	}
+
+	return []byte(result), nil
 }
 
 func (a *Whois) GetRawWhoisData(query string, ctx context.Context) (string, error) {

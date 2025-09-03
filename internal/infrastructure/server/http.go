@@ -3,10 +3,10 @@ package server
 import (
 	"context"
 	"fmt"
-	"github.com/bytedance/sonic"
 	"github.com/gofiber/fiber/v2"
 	"github.com/gofiber/fiber/v2/middleware/healthcheck"
 	recover2 "github.com/gofiber/fiber/v2/middleware/recover"
+	jsoniter "github.com/json-iterator/go"
 	"sync"
 	"time"
 	"whois-api/internal/config"
@@ -21,12 +21,16 @@ type Http struct {
 }
 
 func NewHttpServer(cfg *config.Config) *Http {
+	var json = jsoniter.Config{
+		SortMapKeys: false,
+	}.Froze()
+
 	app := fiber.New(fiber.Config{
 		AppName:           cfg.App.Name,
 		CaseSensitive:     true,
 		EnablePrintRoutes: true,
-		JSONEncoder:       sonic.Marshal,
-		JSONDecoder:       sonic.Unmarshal,
+		JSONEncoder:       json.Marshal,
+		JSONDecoder:       json.Unmarshal,
 		StrictRouting:     true,
 		WriteTimeout:      10 * time.Second,
 		Prefork:           cfg.Service.Http.Prefork,
@@ -81,9 +85,7 @@ func (s *Http) setDefaultMiddlewares() {
 				return c.Next()
 			}
 
-			return c.Status(fiber.StatusForbidden).JSON(fiber.Map{
-				"status_code": "ACCESS_DENIED",
-			})
+			return c.Context().Conn().Close()
 		})
 	}
 

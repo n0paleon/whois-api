@@ -17,18 +17,13 @@ services:
 
   app:
     container_name: 'whois-core'
-    image: 'public.ecr.aws/j6j1g9p3/whois-api:latest'
+    image: 'whois-api:latest'
     build:
       context: .
       dockerfile: Dockerfile
     environment:
       SERVICE.REDIS.ADDR: redis:6379
-      SERVICE.HTTP.HOST: ""
-      SERVICE.HTTP.PORT: 3000
-      SERVICE.HTTP.PREFORK: true
       APP.DEBUG: false
-      RAPIDAPI.ENABLE_PROTECTION: true
-      RAPIDAPI.SECRET_KEY: 92a352a0-c638-11ef-a704-09571823e6ff
     ports:
       - "3000:3000"
     depends_on:

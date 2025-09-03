@@ -14,6 +14,7 @@ import (
 	"time"
 	"whois-api/internal/adapters/api"
 	"whois-api/internal/adapters/api/handler"
+	"whois-api/internal/adapters/dnsadapter"
 	"whois-api/internal/adapters/repository"
 	"whois-api/internal/adapters/whoisadapter"
 	"whois-api/internal/config"
@@ -67,6 +68,9 @@ func main() {
 		fx.Provide(func() *logrus.Logger { return logrs }),
 		fx.Provide(database.NewRedisConn),
 		fx.Provide(repository.NewWhoisRepository),
+		fx.Provide(func() *dnsadapter.DNS {
+			return dnsadapter.NewDNS(cfg.Service.DNSResolver)
+		}),
 		// provide handler
 		fx.Provide(
 			handler.NewAPIV1Handler,

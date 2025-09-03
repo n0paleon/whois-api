@@ -1,6 +1,6 @@
 app:
   name: "Whois API"
-  version: "1.0.2"
+  version: "1.0.3"
   author: "Nopaleon Bonaparte"
   debug: true
 
@@ -17,7 +17,7 @@ service:
 
 rapidapi:
   enable_protection: false
-  secret_key: "92a352a0-c638-11ef-a704-09571823e6ff"
+  secret_key: ""
 
 logger:
   level: "debug"

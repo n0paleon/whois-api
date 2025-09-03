@@ -5,6 +5,7 @@ import (
 	"github.com/gofiber/fiber/v2"
 	"time"
 	"whois-api/internal/adapters/api/dto"
+	"whois-api/internal/adapters/dnsadapter"
 	"whois-api/internal/adapters/whoisadapter"
 	"whois-api/internal/config"
 	"whois-api/internal/core/domain"
@@ -15,13 +16,42 @@ import (
 type APIV1 struct {
 	config       *config.Config
 	WhoisService ports.WhoisService
+	DNSAdapter   *dnsadapter.DNS
 }
 
-func NewAPIV1Handler(config *config.Config, whoisService ports.WhoisService) *APIV1 {
+func NewAPIV1Handler(config *config.Config, whoisService ports.WhoisService, dnsAdapter *dnsadapter.DNS) *APIV1 {
 	return &APIV1{
 		config:       config,
 		WhoisService: whoisService,
+		DNSAdapter:   dnsAdapter,
 	}
+}
+
+func (h *APIV1) QueryDNS(c *fiber.Ctx) error {
+	var payload *dto.SingleDomainQuery
+
+	if err := c.BodyParser(&payload); err != nil {
+		return c.Status(fiber.StatusBadRequest).JSON(domain.APIResponse{
+			Error:   true,
+			Message: "domain is required",
+		})
+	}
+
+	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
+	defer cancel()
+
+	result, err := h.DNSAdapter.QueryAll(ctx, payload.Domain)
+	if err != nil {
+		return c.Status(fiber.StatusInternalServerError).JSON(domain.APIResponse{
+			Error:   true,
+			Message: err.Error(),
+		})
+	}
+
+	return c.JSON(domain.APIResponse{
+		Error: false,
+		Data:  result,
+	})
 }
 
 func (h *APIV1) GetTLDList(c *fiber.Ctx) error {
