@@ -16,7 +16,7 @@ type Whois struct {
 }
 
 var (
-	defaultTimeout = 30 * time.Second
+	defaultTimeout = 15 * time.Second
 	alternativeAPI = "https://check-host.net/ip-info/whois"
 )
 
