@@ -2,9 +2,10 @@ package dnsadapter
 
 import (
 	"context"
-	"github.com/miekg/dns"
 	"sync"
 	"whois-api/internal/infrastructure/workers"
+
+	"github.com/miekg/dns"
 )
 
 type DNS struct {
@@ -13,7 +14,7 @@ type DNS struct {
 
 func NewDNS(resolver string) *DNS {
 	if resolver == "" {
-		resolver = "8.8.8.8:53" // default Google DNS
+		resolver = "1.1.1.1:53" // default Google DNS
 	}
 	return &DNS{resolver: resolver}
 }
@@ -26,7 +27,7 @@ type DNSRecord struct {
 	Raw   string `json:"raw"`
 }
 
-// Query: ambil record berdasarkan type
+// Query record berdasarkan type
 func (a *DNS) Query(ctx context.Context, domain string, queryType uint16) ([]dns.RR, error) {
 	m := new(dns.Msg)
 	m.SetQuestion(dns.Fqdn(domain), queryType)

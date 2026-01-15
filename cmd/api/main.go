@@ -2,8 +2,6 @@ package main
 
 import (
 	"context"
-	"github.com/sirupsen/logrus"
-	"go.uber.org/fx"
 	"log"
 	"net"
 	"os"
@@ -24,6 +22,9 @@ import (
 	"whois-api/internal/infrastructure/server"
 	"whois-api/internal/infrastructure/workers"
 	"whois-api/pkg/logger"
+
+	"github.com/sirupsen/logrus"
+	"go.uber.org/fx"
 )
 
 func main() {
